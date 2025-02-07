@@ -133,6 +133,8 @@
 			<script type="text/javascript" src="https://unpkg.com/view-ui-plus"></script>
 
 			<div class="fileList">
+				<input type="file" webkitdirectory directory/>
+				
 				<i-Button class="fileListBtn" size="large" icon="md-folder-open"
 					@click="showFileList = true">文件列表</i-Button>
 				<Image fit='contain' src="./img/logo.png" class="logo"></Image>
@@ -312,7 +314,7 @@
 					async openFolder() {
 						try {
 							// 获得文件夹的句柄
-							const handle = await showDirectoryPicker(); // FileSystemDirectoryHandle
+							const handle = await window.showDirectoryPicker(); // FileSystemDirectoryHandle
 							this.files = []
 							this.mainFolder.path = handle.name;
 							this.mainFolder.handler = handle;
@@ -475,7 +477,7 @@
 					async getCategoryFolder() {
 						try {
 							// 获得文件夹的句柄
-							this.categoryFolderHandle = await showDirectoryPicker(); // FileSystemDirectoryHandle
+							this.categoryFolderHandle = await window.showDirectoryPicker(); // FileSystemDirectoryHandle
 							this.categoryFolderName = this.categoryFolderHandle.name;
 							if (!this.categoryName) this.categoryName = this.categoryFolderName
 						} catch (e) {
