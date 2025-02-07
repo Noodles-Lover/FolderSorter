@@ -1,0 +1,65 @@
+.displayerContainer {
+	height: 85%;
+	width: 100%;
+
+	.buttons {
+		display: flex;
+		margin: 3px;
+
+		.ivu-btn {
+			font-size: 1rem;
+		}
+	}
+
+	.displayer {
+		background-color: gray;
+		height: 70%;
+		width: 100%;
+		margin: auto 0;
+		border: 2px solid black;
+		border-radius: 5px;
+
+		.imgDisplayer {
+			max-height: 100%;
+			max-width: 100%;
+			margin: auto auto;
+		}
+	}
+
+	.fileTitle {
+		display: flex;
+		text-align: center;
+		margin: 3vh auto;
+
+		.inputContainer {
+			/* background-color: blueviolet; */
+			width: 80%;
+			height: 3.3vh;
+			margin: 0 auto;
+
+			.ivu-input {
+				text-align: center;
+				font-size: 1.3rem;
+				height: 3.3rem;
+			}
+		}
+		
+		/* 左右箭头 */
+		.fileSwitch {
+			width: 3.3rem;
+			height: 3.3rem;
+			/* background-color: antiquewhite; */
+		}
+
+		/* 右箭头图片翻转 */
+		#rightArrow {
+			transform: scaleX(-1);
+		}
+	}
+
+	/* deleteFile i-button */
+	.ivu-btn-long {
+		font-size: 1.2rem;
+		height: 2.2rem;
+	}
+}

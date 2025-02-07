@@ -1,21 +1,21 @@
 .fileDetail {
 	height: 70%;
-	width: 80%;
+	width: 85%;
 	margin: auto auto;
 	/* padding: 1vw; */
 	background-color: #fbffa5;
 	border: 2px solid black;
-	border-radius: 5px;
+	border-radius: 8px;
 
 	.fileDetailTitle {
 		/* display: inline-block; */
 		font-weight: bold;
-		font-size: 2.5vh;
+		font-size: 1.2rem;
 		/* margin: 1vh; */
 	}
 
 	.fileDetailData {
 		margin: 1vh 0;
-		font-size: 2.2vh;
+		font-size: 1rem;
 	}
 }

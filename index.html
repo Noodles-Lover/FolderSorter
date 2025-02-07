@@ -6,10 +6,13 @@
 		<title>分类夹</title>
 		<script src="js/v3.2.8/vue.global.prod.js" type="text/javascript" charset="utf-8"></script>
 		
+		<!-- js和css文件导入 -->
 		<script src="js/format.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/support.js" type="text/javascript" charset="utf-8"></script>
+		
 		<link rel="stylesheet" href="./css/logo.css">
 		<link rel="stylesheet" href="./css/fileDetail.css">
+		<link rel="stylesheet" href="./css/displayerContainer.css">
 
 		<style>
 			.ivu-table .table-selected-row td {
@@ -36,6 +39,8 @@
 					left: 0;
 					margin: 2vh;
 				}
+				
+				/* logo.css */
 				
 				/* fileDetail.css */
 			}
@@ -64,67 +69,7 @@
 
 				}
 
-				.displayerContainer {
-					height: 85%;
-					width: 100%;
-
-					.buttons {
-						display: flex;
-						margin: 3px;
-						
-						.ivu-btn{
-							font-size: 1rem;
-						}
-					}
-
-					.displayer {
-						background-color: gray;
-						height: 70%;
-						width: 100%;
-						margin: auto 0;
-						border: 2px solid black;
-						border-radius: 5px;
-
-						.imgDisplayer {
-							max-height: 100%;
-							max-width: 100%;
-							margin: auto auto;
-						}
-					}
-
-					.fileTitle {
-						display: flex;
-						text-align: center;
-						margin: 3vh auto;
-
-						.inputContainer {
-							/* background-color: blueviolet; */
-							width: 70%;
-							height: 7vh;
-							margin: 0 auto;
-
-							.ivu-input {
-								text-align: center;
-								font-size: 3vh;
-								height: 7vh;
-							}
-						}
-
-						.fileSwitch {
-							width: 7vh;
-							height: 7vh;
-							/* background-color: antiquewhite; */
-						}
-
-						#rightArrow {
-							transform: scaleX(-1);
-						}
-					}
-
-					.deleteFile {
-						height: 5vh;
-					}
-				}
+				/* displayerContainer.css */
 
 			}
 
@@ -412,9 +357,10 @@
 							this.changeFile(0);
 							setTimeout(msg, 0);
 						} catch (e) {
-							//用户拒绝查看文件
+							// 用户拒绝查看文件或报错
 							console.log(e)
 							this.$Message.error('打开文件夹失败！');
+							this.$Message.error(e.toString());
 						}
 					},
 					displayInitialize() {
@@ -427,7 +373,7 @@
 					},
 					async changeFile(index) {
 						if (index < 0 || index >= this.files.length) {
-							this.$Message.error(index + ' 超出文件夹范围！');
+							this.$Message.error('超出文件夹范围！');
 							return;
 						}
 						this.curIndex = index;
@@ -468,7 +414,15 @@
 					async renameFile() {
 						this.$Message.success('rename');
 						let fileHandle = this.files[this.curIndex].fileHandle
-						await fileHandle.move(this.mainFolder.handler, this.fileName);
+						try{
+							await fileHandle.move(this.mainFolder.handler, this.fileName);
+						} catch (e){
+							console.error('重命名失败:', e);
+							this.$Message.error('重命名失败');
+							this.$Message.error(e.toString());
+							return
+						}
+						
 						this.files[this.curIndex].name = this.fileName
 						this.$Message.success('成功重命名文件为 ' + this.fileName);
 					},
@@ -490,11 +444,11 @@
 
 										console.log('文件已删除');
 										this.$Message.success('已删除文件 ' + this.fileName);
-									} catch (error) {
+									} catch (e) {
 										// 如果删除过程中出现错误，打印错误信息
-										console.error('删除文件失败:', error);
+										console.error('删除文件失败:', e);
 										this.$Message.error('删除文件失败');
-										this.$Message.error(error);
+										this.$Message.error(e.toString());
 									}
 								},
 								onCancel: () => {
@@ -527,6 +481,7 @@
 						} catch (e) {
 							console.log(e)
 							this.$Message.error('打开文件夹失败！');
+							this.$Message.error(e.toString());
 						}
 					},
 					setShortcut() {
@@ -577,6 +532,7 @@
 								background: true,
 								content: '分类失败'
 							});
+							this.$Message.error(e.toString());
 						}
 						// setTimeout(()=>{
 						// 	this.animation.right = true

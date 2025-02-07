@@ -2,6 +2,7 @@
 	position: absolute; 
 	left: 0; 
 	bottom: 0;
-	width: 10vh;
-	height: 10vh;
+	width: 4rem;
+	height: 4rem;
+	margin: 1vh;
 }
