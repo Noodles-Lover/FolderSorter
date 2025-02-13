@@ -77,9 +77,10 @@ async function openFolder(folderHandle, isRecursion, ignoreOtherFile) {
 				console.error('获取媒体长度失败:', error);
 			});
 
-		} else if (fileHandle.kind === 'directory') {
-			// 处理子目录
-			if (isRecursion) {
+		} else if (fileHandle.kind === 'directory') {	// 子目录
+			if (fileHandle.name == "_删除") continue		// 网站创建的"_删除"文件夹
+			
+			if (isRecursion) {	// 递归文件夹
 				let subFiles = await openFolder(fileHandle, true, ignoreOtherFile)
 				folderFiles = folderFiles.concat(subFiles)
 			}
