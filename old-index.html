@@ -5,15 +5,14 @@
 		<meta charset="utf-8">
 		<title>分类夹</title>
 		<script src="js/v3.2.8/vue.global.prod.js" type="text/javascript" charset="utf-8"></script>
-
+		
 		<!-- js和css文件导入 -->
 		<script src="js/format.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/support.js" type="text/javascript" charset="utf-8"></script>
-
+		
 		<link rel="stylesheet" href="./css/logo.css">
 		<link rel="stylesheet" href="./css/fileDetail.css">
 		<link rel="stylesheet" href="./css/displayerContainer.css">
-		<link rel="stylesheet" href="./css/rightTop.css">
 
 		<style>
 			.ivu-table .table-selected-row td {
@@ -29,20 +28,20 @@
 				background-color: greenyellow;
 				display: flex;
 				flex-direction: column;
-
-				.ivu-btn-large {
+				
+				.ivu-btn-large{
 					font-size: 1rem;
 				}
-
+				
 				.fileListBtn {
 					position: absolute;
 					top: 0;
 					left: 0;
 					margin: 2vh;
 				}
-
+				
 				/* logo.css */
-
+				
 				/* fileDetail.css */
 			}
 
@@ -64,8 +63,7 @@
 						font-weight: bold;
 						/* padding-top: 5vh; */
 					}
-
-					.subtitle {
+					.subtitle{
 						font-size: 1rem;
 					}
 
@@ -126,12 +124,6 @@
 					}
 				}
 			}
-
-			.modalOption {
-				display: flex;
-				flex-direction: row;
-				margin: 5px;
-			}
 		</style>
 	</head>
 
@@ -141,23 +133,20 @@
 			<script type="text/javascript" src="https://unpkg.com/view-ui-plus"></script>
 
 			<div class="fileList">
-				<!-- 左上角 -->
+				<input type="file" webkitdirectory directory/>
+				
 				<i-Button class="fileListBtn" size="large" icon="md-folder-open"
 					@click="showFileList = true">文件列表</i-Button>
 				<Image fit='contain' src="./img/logo.png" class="logo"></Image>
-
-				<!-- 文件列表抽屉 -->
+				
 				<Drawer :title="'文件夹: ' + mainFolder.path" placement="left" :closable="false" v-model="showFileList"
 					width=50>
 					<i-Table border show-header :height="tableHeight" :columns="columns" :data="files" highlight-row
-						@on-row-dblclick="clickedFile" @on-sort-change="sortChange"
-						:row-class-name="rowClassName"></i-Table>
+						@on-row-dblclick="clickedFile" :row-class-name="rowClassName"></i-Table>
 				</Drawer>
 
 				<div class="fileDetail">
 					<Card :title="files[curIndex].name" shadow icon="md-document" style="height: 100%;">
-						<p class="fileDetailTitle">编号：</p>
-						<p class="fileDetailData">{{ curIndex+1 }}</p>
 						<p class="fileDetailTitle">大小：</p>
 						<p class="fileDetailData">{{ files[curIndex].size }}</p>
 						<p class="fileDetailTitle">修改时间：</p>
@@ -176,7 +165,7 @@
 
 				<div class="displayerContainer">
 					<div class="buttons">
-						<i-Button class="openFolder" type="primary" @click="chooseFolder"
+						<i-Button class="openFolder" type="primary" @click="openFolder"
 							style="margin-right: auto;">打开文件夹</i-Button>
 
 						<i-Button class="addCategory" type="primary" @click="newCategory">新增分类</i-Button>
@@ -184,18 +173,18 @@
 					<div class="displayer">
 						<!-- <transition name="slide-right">
 							<div v-show="animation.right"> -->
-						<Image class="imgDisplayer" fit='contain' :src="displayerSrc.img" @click="previewImage"
-							v-if="displayType.img" />
-						<audio :src="displayerSrc.audio" controls v-if="displayType.audio" :autoplay="settings.autoplay" volume=0.25>
-							您的浏览器不支持 audio 元素。
-						</audio>
-						<video :src="displayerSrc.video" controls style="width: 100%; height: 100%;"
-							v-if="displayType.video" :autoplay="settings.autoplay" volume=0.5>
-							您的浏览器不支持 video 元素。
-						</video>
-						<!-- </div>
+								<Image class="imgDisplayer" fit='contain' :src="displayerSrc.img" @click="previewImage"
+									v-if="displayType.img" />
+								<audio :src="displayerSrc.audio" controls v-if="displayType.audio" autoplay volume=0.25>
+									您的浏览器不支持 audio 元素。
+								</audio>
+								<video :src="displayerSrc.video" controls style="width: 100%; height: 100%;"
+									v-if="displayType.video" autoplay volume=0.5>
+									您的浏览器不支持 video 元素。
+								</video>
+							<!-- </div>
 						</transition> -->
-
+						
 					</div>
 					<div class="fileTitle">
 						<Image class="fileSwitch" fit='fill' src="./img/arrow.png" alt="<"
@@ -207,21 +196,11 @@
 						<Image id="rightArrow" class="fileSwitch" fit='fill' src="./img/arrow.png" alt="<"
 							@click="changeFile(curIndex+1)" />
 					</div>
-					<i-Button class="deleteFile" type="error" long @click="clickedDelete">删除</i-Button>
+					<i-Button class="deleteFile" type="error" long @click="deleteFile">删除</i-Button>
 				</div>
 			</div>
 
 			<div class="categories">
-				<!-- 右上角 -->
-				<div class="rightTop">
-					<div>
-						<Icon type="md-help-circle" @click="this.showHelp = true;" />
-					</div>
-					<div>
-						<Icon type="md-settings" @click="this.showSettings = true;" />
-					</div>
-				</div>
-
 				<div class="categoryContainer" v-for="(item,index) in categories" :key="index">
 					<button class="shortcut">{{ item.shortcut }}</button>
 					<!-- <i-Button class="name" @click=""></i-Button> -->
@@ -231,7 +210,6 @@
 
 			</div>
 
-			<!-- 新增分类弹窗 -->
 			<Modal footer-hide width=40 v-model="showNewCategory" title="新增分类" scrollable>
 				<div style="display: flex; flex-direction: column;">
 					<div style="display: flex; flex-direction: row; margin: 5px;">
@@ -253,55 +231,6 @@
 				</div>
 				<i-Button type="success" style="margin-top: 3vh; width: 100%;" @click="comfirmCategory">确认</i-Button>
 			</Modal>
-
-			<!-- 设置弹窗 -->
-			<Modal footer-hide v-model="showSettings" title="设置">
-				<div style="display: flex; flex-direction: column;">
-					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">删除时弹出确认弹窗</p>
-						<i-Switch v-model="settings.deleteConfirm" />
-					</div>
-					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">输入框失去焦点时执行重命名</p>
-						<i-Switch v-model="settings.loseFocusRename" />
-					</div>
-					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">排序后维持在当前文件</p>
-						<i-Switch v-model="settings.sortStay" />
-					</div>
-					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">音频视频自动播放</p>
-						<i-Switch v-model="settings.autoplay" />
-					</div>
-					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">递归打开文件夹</p>
-						<i-Switch v-model="settings.folderRecursion" />
-					</div>
-					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">忽略不可预览文件（图片音频视频以外的）</p>
-						<i-Switch v-model="settings.ignoreOtherFile" />
-					</div>
-					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">报错信息弹窗</p>
-						<i-Switch v-model="settings.errorInfo" />
-					</div>
-				</div>
-			</Modal>
-		
-			<!-- 说明弹窗 -->
-			<Modal footer-hide v-model="showHelp" title="说明" scrollable>
-				<div style="display: flex; flex-direction: column;">
-					<h3>网站操作快捷键:</h3>
-					<span><strong>> Tab: </strong>打开文件列表</span>
-					<span><strong>> 左右箭头: </strong>切换左右文件</span>
-					<span><strong>> del: </strong>删除文件</span>
-					<br/>
-					<span><strong>重命名: </strong>默认修改后需要按enter执行</span>
-					<span><strong>注：</strong>文件夹不是实时更新的，若需更新请重新打开文件夹</span>
-					<br/>
-					<a href="https://github.com/Noodles-Lover/FolderSorter/tree/master">https://github.com/Noodles-Lover/FolderSorter/tree/master</a>
-				</div>
-			</Modal>
 		</div>
 		<script>
 			const app = Vue.createApp({
@@ -318,6 +247,8 @@
 						categoryShortcut: "",
 						checkingShortcut: false,
 						tableHeight: window.innerHeight - window.innerHeight * 0.15,
+						showFileList: false,
+						showNewCategory: false,
 						isFocused: false,
 						fileName: "",
 						displayerSrc: {
@@ -342,56 +273,45 @@
 								key: 'name',
 								fixed: 'left',
 								resizable: true,
+								sortable: true,
 							},
 							{
 								title: '大小',
 								key: 'size',
 								width: 110,
 								resizable: true,
-								sortable: 'custom',
+								// sortable: true,
 							},
 							{
 								title: '长度',
 								key: 'length',
 								width: 95,
 								resizable: true,
-								sortable: 'custom'
+								// sortable: true,
 							},
 							{
 								title: '修改时间',
-								key: 'lastModified',
-								sortable: 'custom'
+								key: 'lastModified'
 							}
 						],
 						files: [{
 							fileHandle: null, // FileSystemFileHandle
 							name: 'Noodles',
-							size: '999999 GB',
+							size: 9999999,
 							length: '-1',
 							lastModified: '2077-08-19'
-						},],
+						}, ],
 						settings: {
 							deleteConfirm: true,
-							loseFocusRename: false,
-							sortStay: false,
-							autoplay: true,
-							folderRecursion: false,
-							ignoreOtherFile: false,
-							errorInfo: false,
 						},
-						animation: {
+						animation:{
 							right: true,
 							delete: true,
-						},
-
-						showFileList: false,
-						showNewCategory: false,
-						showSettings: false,
-						showHelp: false,
+						}
 					}
 				},
 				methods: {
-					async chooseFolder() {
+					async openFolder() {
 						try {
 							// 获得文件夹的句柄
 							const handle = await window.showDirectoryPicker(); // FileSystemDirectoryHandle
@@ -403,19 +323,37 @@
 								content: '加载文件中...',
 								duration: 0
 							});
+							// console.log(4)
+							for await (const fileHandle of handle.values()) {
+								// console.log(5)
+								// 用fileHandle遍历文件夹内的文件（FileSystemFileHandle类）
+								console.log(`Entry name: ${fileHandle.name}, Entry kind: ${fileHandle.kind}`);
+								// console.log(6)
 
-							this.files = await openFolder(handle, this.settings.folderRecursion, this.settings.ignoreOtherFile)
-							if (this.files.length <= 0){
-								this.files.push({
-									fileHandle: null, // FileSystemFileHandle
-									name: '无',
-									size: '',
-									length: '',
-									lastModified: ''
-								})
+								if (fileHandle.kind === 'file') { // 处理文件
+									const file = await fileHandle.getFile();
+									// console.log(file.type)
+
+									getMediaDuration(file).then(duration => {
+										this.files.push({
+											fileHandle: fileHandle,
+											name: file.name,
+											size: formatFileSize(file.size),
+											length: formatDuration(duration),
+											lastModified: new Date(file.lastModified)
+											.toLocaleString()
+										})
+										// console.log('媒体长度为：', duration, '秒');
+									}).catch(error => {
+										this.$Message.error('获取媒体长度失败');
+										console.error('获取媒体长度失败:', error);
+									});
+
+								} else if (fileHandle.kind === 'directory') {
+									// 处理子目录
+									console.log(`Directory name: ${fileHandle.name}`);
+								}
 							}
-							console.log(this.files)
-							
 							// console.log(JSON.parse(JSON.stringify(this.files)))
 							this.showFileList = true;
 							this.changeFile(0);
@@ -424,7 +362,7 @@
 							// 用户拒绝查看文件或报错
 							console.log(e)
 							this.$Message.error('打开文件夹失败！');
-							if (this.settings.errorInfo) this.$Message.error(e.toString());
+							this.$Message.error(e.toString());
 						}
 					},
 					displayInitialize() {
@@ -468,69 +406,6 @@
 						this.showFileList = false;
 						this.changeFile(index)
 					},
-					async sortChange(data) {
-						// data: 一字典：column：当前列数据 key：排序依据的指标 order：排序的顺序，值为 asc 或 desc
-						
-						// 保存当前选择项的 fileHandle，用作排序后对比，找到排序后的index
-						const currentFileHandle = this.files[this.curIndex].fileHandle;
-						let newIndex;
-						let matched = false
-						
-						switch(data.key){
-							case 'size':
-								this.files.sort((a, b) => {		// 原地排序api
-									const A = parseFileSize(a.size);
-									const B = parseFileSize(b.size);
-								
-									if (data.order == 'asc') return A - B; // 升序
-									else if (data.order == 'desc') return B - A; // 降序
-								});
-								
-								matched = true
-								break
-							case 'length':
-								this.files.sort((a, b) => {		// 原地排序api
-									const A = parseDuration(a.length);
-									const B = parseDuration(b.length);
-									
-									if (data.order == 'asc') return A - B; // 升序
-									else if (data.order == 'desc') return B - A; // 降序
-								});
-								
-								matched = true
-								break
-							case 'lastModified':
-								const lastModifiedArray = await Promise.all(
-							        this.files.map(async (file) => {
-							            const fileObj = await file.fileHandle.getFile();
-							            return fileObj.lastModified; // 提取 lastModified 时间戳
-							        })
-							    );
-								
-								this.files.sort((a, b) => {		// 原地排序api
-									const indexA = this.files.indexOf(a);
-									const indexB = this.files.indexOf(b);
-									const A = lastModifiedArray[indexA];
-									const B = lastModifiedArray[indexB];
-									
-									if (data.order == 'asc') return A - B; // 升序
-									else if (data.order == 'desc') return B - A; // 降序
-								});
-								
-								matched = true
-								break
-						}
-						
-						if (matched && data.order != 'normal'){
-							if (this.settings.sortStay){	// 维持用户当前选择文件
-								newIndex = this.files.findIndex(file => file.fileHandle === currentFileHandle);
-								this.curIndex = newIndex		// 更新排序后的用户index
-								// this.changeFile(newIndex)	// 不用changeFile，会触发页面重置使得音频、视频重播
-							} else {
-								this.changeFile(0)
-							}
-						}
-					},
 					rowClassName(row, index) {
 						// alert(index)
 						if (index == this.curIndex) {
@@ -539,67 +414,58 @@
 						return ''
 					},
 					async renameFile() {
-						// this.$Message.success('rename');
+						this.$Message.success('rename');
 						let fileHandle = this.files[this.curIndex].fileHandle
-						try {
+						try{
 							await fileHandle.move(this.mainFolder.handler, this.fileName);
-						} catch (e) {
+						} catch (e){
 							console.error('重命名失败:', e);
 							this.$Message.error('重命名失败');
-							if (this.settings.errorInfo) this.$Message.error(e.toString());
+							this.$Message.error(e.toString());
 							return
 						}
-
+						
 						this.files[this.curIndex].name = this.fileName
-						this.$Message.success(`成功重命名文件为 [${this.fileName}]`);
+						this.$Message.success('成功重命名文件为 ' + this.fileName);
 					},
 					async removeFileInFileList() {
 						this.files.splice(this.curIndex, 1) // 删除数组一项，后面元素自动往前挪
-
-						// 判断删除后当前index是否大于文件数，即当前为最后一项而删除了该项
-						if (this.curIndex >= this.files.length) this.curIndex = this.files.length - 1
 						await this.changeFile(this.curIndex)
 					},
-					async clickedDelete() {
+					async deleteFile() {
 						if (this.settings.deleteConfirm) {
 							this.$Modal.confirm({
 								title: '删除确认',
-								content: `<p>确认要删除文件 [${this.fileName}] 吗</p>`,
+								content: `<p>确认要删除文件 ${this.fileName} 吗</p>`,
 								onOk: async () => {
-									await this.deleteFile()
+									try {
+										await this.files[this.curIndex].fileHandle
+											.remove(); // 调用 remove 方法删除文件
+										this.removeFileInFileList() // 在文件列表中删除
+										if (this.curIndex >= this.files.length) this.changeFile(this.curIndex-1)
+
+										console.log('文件已删除');
+										this.$Message.success('已删除文件 ' + this.fileName);
+									} catch (e) {
+										// 如果删除过程中出现错误，打印错误信息
+										console.error('删除文件失败:', e);
+										this.$Message.error('删除文件失败');
+										this.$Message.error(e.toString());
+									}
 								},
 								onCancel: () => {
 									return;
 								}
 							});
-						} else {
-							await this.deleteFile()
-						}
-					},
-					async deleteFile() {
-						try {
-							var deleteFileName = this.fileName
-
-							await this.files[this.curIndex].fileHandle
-								.remove(); // 调用 remove 方法删除文件
-							this.removeFileInFileList() // 在文件列表中删除
-
-							console.log('文件已删除');
-							this.$Message.success(`已删除文件 [${deleteFileName}]`);
-						} catch (e) {
-							// 如果删除过程中出现错误，打印错误信息
-							console.error('删除文件失败:', e);
-							this.$Message.error('删除文件失败');
-							if (this.settings.errorInfo) this.$Message.error(e.toString());
 						}
 					},
 					deleteCategory(index) {
 						let cName = this.categories[index].name
 						this.categories.splice(index, 1) // 删除数组一项，后面元素自动往前挪
-						this.$Message.success(`已删除分类 [${cName}]`);
+						this.$Message.success(`已删除分类[${cName}]`);
 					},
 					previewImage() {
-						// this.$Message.success('preview');
+						this.$Message.success('preview');
 
 						// 它要传数组，故新建临时数组
 						let tmpImg = []
@@ -611,8 +477,7 @@
 					async getCategoryFolder() {
 						try {
 							// 获得文件夹的句柄
-							this.categoryFolderHandle = await window
-								.showDirectoryPicker(); // FileSystemDirectoryHandle
+							this.categoryFolderHandle = await window.showDirectoryPicker(); // FileSystemDirectoryHandle
 							this.categoryFolderName = this.categoryFolderHandle.name;
 							if (!this.categoryName) this.categoryName = this.categoryFolderName
 						} catch (e) {
@@ -662,27 +527,27 @@
 							await curFile.move(category.folderHandle, this.fileName);
 							this.removeFileInFileList()
 
-							this.$Message.success(`成功分类至 [${category.name}]`);
+							this.$Message.success(`成功分类至[${category.name}]`);
 						} catch (e) {
 							console.log(e)
 							this.$Message['error']({
 								background: true,
 								content: '分类失败'
 							});
-							if (this.settings.errorInfo) this.$Message.error(e.toString());
+							this.$Message.error(e.toString());
 						}
 						// setTimeout(()=>{
 						// 	this.animation.right = true
 						// }, 500)
 					},
-					handleFocus() { // 重命名输入框获取焦点
+					handleFocus() {
 						// console.log('focus')
 						this.isFocused = true;
 					},
-					handleBlur() { // 重命名输入框失去焦点
+					handleBlur() {
 						// console.log('not focus')
 						this.isFocused = false;
-						if (this.settings.loseFocusRename) this.renameFile()
+						// renameFile()
 					},
 					async handleKeyDown(event) {
 						if (this.checkingShortcut) {
@@ -694,11 +559,11 @@
 							});
 							return
 						}
-
-						if (this.isFocused) return // 在修改名称
+						
+						if (this.isFocused) return	// 在修改名称
 
 						// 默认界面操作快捷键
-						switch (event.key) {
+						switch (event.key){
 							case "Tab":
 								this.showFileList = !this.showFileList
 								return

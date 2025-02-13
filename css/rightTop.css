@@ -1,0 +1,12 @@
+.rightTop{
+	/* background-color: aqua; */
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: flex;
+	
+	.ivu-icon{
+		margin: 0.3rem;
+		font-size: 2.2rem;	/* 图标大小 */
+	}
+}
