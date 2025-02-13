@@ -596,6 +596,8 @@
 								let trashFolderHandle = await mainFolderHandle.getDirectoryHandle('_删除', {
 									create: true
 								});
+								var deleteFileName = this.fileName
+								
 								await targetFileHandle.move(trashFolderHandle); // 将文件移动到 "_删除" 文件夹
 
 							} catch (e) {
@@ -605,7 +607,7 @@
 								return
 							}
 							this.removeFileInFileList()
-							console.log(`文件 "${targetFileHandle.name}" 已移动到 "_删除" 文件夹`);
+							console.log(`文件 "${deleteFileName}" 已移动到 "_删除" 文件夹`);
 							this.$Message.success(`已移动文件 [${deleteFileName}] 到"_删除"文件夹`);
 						} else {
 							try {
