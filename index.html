@@ -186,7 +186,8 @@
 							<div v-show="animation.right"> -->
 						<Image class="imgDisplayer" fit='contain' :src="displayerSrc.img" @click="previewImage"
 							v-if="displayType.img" />
-						<audio :src="displayerSrc.audio" controls v-if="displayType.audio" :autoplay="settings.autoplay" volume=0.25>
+						<audio :src="displayerSrc.audio" controls v-if="displayType.audio" :autoplay="settings.autoplay"
+							volume=0.25>
 							您的浏览器不支持 audio 元素。
 						</audio>
 						<video :src="displayerSrc.video" controls style="width: 100%; height: 100%;"
@@ -287,7 +288,7 @@
 					</div>
 				</div>
 			</Modal>
-		
+
 			<!-- 说明弹窗 -->
 			<Modal footer-hide v-model="showHelp" title="说明" scrollable>
 				<div style="display: flex; flex-direction: column;">
@@ -295,11 +296,12 @@
 					<span><strong>> Tab: </strong>打开文件列表</span>
 					<span><strong>> 左右箭头: </strong>切换左右文件</span>
 					<span><strong>> del: </strong>删除文件</span>
-					<br/>
+					<br />
 					<span><strong>重命名: </strong>默认修改后需要按enter执行</span>
 					<span><strong>注：</strong>文件夹不是实时更新的，若需更新请重新打开文件夹</span>
-					<br/>
-					<a href="https://github.com/Noodles-Lover/FolderSorter/tree/master">https://github.com/Noodles-Lover/FolderSorter/tree/master</a>
+					<br />
+					<a
+						href="https://github.com/Noodles-Lover/FolderSorter/tree/master">https://github.com/Noodles-Lover/FolderSorter/tree/master</a>
 				</div>
 			</Modal>
 		</div>
@@ -369,7 +371,7 @@
 							size: '999999 GB',
 							length: '-1',
 							lastModified: '2077-08-19'
-						},],
+						}, ],
 						settings: {
 							deleteConfirm: true,
 							loseFocusRename: false,
@@ -404,8 +406,9 @@
 								duration: 0
 							});
 
-							this.files = await openFolder(handle, this.settings.folderRecursion, this.settings.ignoreOtherFile)
-							if (this.files.length <= 0){
+							this.files = await openFolder(handle, this.settings.folderRecursion, this.settings
+								.ignoreOtherFile)
+							if (this.files.length <= 0) {
 								this.files.push({
 									fileHandle: null, // FileSystemFileHandle
 									name: '无',
@@ -415,7 +418,7 @@
 								})
 							}
 							console.log(this.files)
-							
+
 							// console.log(JSON.parse(JSON.stringify(this.files)))
 							this.showFileList = true;
 							this.changeFile(0);
@@ -470,61 +473,61 @@
 					},
 					async sortChange(data) {
 						// data: 一字典：column：当前列数据 key：排序依据的指标 order：排序的顺序，值为 asc 或 desc
-						
+
 						// 保存当前选择项的 fileHandle，用作排序后对比，找到排序后的index
 						const currentFileHandle = this.files[this.curIndex].fileHandle;
 						let newIndex;
 						let matched = false
-						
-						switch(data.key){
+
+						switch (data.key) {
 							case 'size':
-								this.files.sort((a, b) => {		// 原地排序api
+								this.files.sort((a, b) => { // 原地排序api
 									const A = parseFileSize(a.size);
 									const B = parseFileSize(b.size);
-								
+
 									if (data.order == 'asc') return A - B; // 升序
 									else if (data.order == 'desc') return B - A; // 降序
 								});
-								
+
 								matched = true
 								break
 							case 'length':
-								this.files.sort((a, b) => {		// 原地排序api
+								this.files.sort((a, b) => { // 原地排序api
 									const A = parseDuration(a.length);
 									const B = parseDuration(b.length);
-									
+
 									if (data.order == 'asc') return A - B; // 升序
 									else if (data.order == 'desc') return B - A; // 降序
 								});
-								
+
 								matched = true
 								break
 							case 'lastModified':
 								const lastModifiedArray = await Promise.all(
-							        this.files.map(async (file) => {
-							            const fileObj = await file.fileHandle.getFile();
-							            return fileObj.lastModified; // 提取 lastModified 时间戳
-							        })
-							    );
-								
-								this.files.sort((a, b) => {		// 原地排序api
+									this.files.map(async (file) => {
+										const fileObj = await file.fileHandle.getFile();
+										return fileObj.lastModified; // 提取 lastModified 时间戳
+									})
+								);
+
+								this.files.sort((a, b) => { // 原地排序api
 									const indexA = this.files.indexOf(a);
 									const indexB = this.files.indexOf(b);
 									const A = lastModifiedArray[indexA];
 									const B = lastModifiedArray[indexB];
-									
+
 									if (data.order == 'asc') return A - B; // 升序
 									else if (data.order == 'desc') return B - A; // 降序
 								});
-								
+
 								matched = true
 								break
 						}
-						
-						if (matched && data.order != 'normal'){
-							if (this.settings.sortStay){	// 维持用户当前选择文件
+
+						if (matched && data.order != 'normal') {
+							if (this.settings.sortStay) { // 维持用户当前选择文件
 								newIndex = this.files.findIndex(file => file.fileHandle === currentFileHandle);
-								this.curIndex = newIndex		// 更新排序后的用户index
+								this.curIndex = newIndex // 更新排序后的用户index
 								// this.changeFile(newIndex)	// 不用changeFile，会触发页面重置使得音频、视频重播
 							} else {
 								this.changeFile(0)
@@ -727,6 +730,12 @@
 				},
 				mounted() {
 					document.addEventListener('keydown', this.handleKeyDown);
+					setTimeout(() => {
+						this.$Modal.warning({
+							title: "提示",
+							content: "<p>本网站的删除为永久删除，请谨慎使用！</p>"
+						});
+					}, 100);
 				},
 				beforeDestroy() {
 					document.removeEventListener('keydown', this.handleKeyDown);
