@@ -452,10 +452,21 @@
 						this.curIndex = index;
 						this.fileName = this.files[index].name;
 
-						const file = await this.files[this.curIndex].fileHandle.getFile()
-
 						// displayer各数据初始化
 						this.displayInitialize()
+
+						let file
+						// try {
+						// 	file = await this.files[this.curIndex].fileHandle.getFile()
+						// } catch (e) {
+						// 	console.error(e)
+						// 	this.$Message.error('切换文件失败');
+						// 	if (this.settings.errorInfo) this.$Message.error(e.toString());
+						// 	return
+						// }
+						let fileHandle = this.files[this.curIndex].fileHandle
+						if (fileHandle) file = await fileHandle.getFile()
+						else return
 
 						if (file.type.startsWith('image')) {
 							this.displayType.img = true
@@ -563,6 +574,16 @@
 						this.$Message.success(`成功重命名文件为 [${this.fileName}]`);
 					},
 					async removeFileInFileList() {
+						if (this.files.length == 1) {
+							this.files.push({
+								fileHandle: null, // FileSystemFileHandle
+								name: '无',
+								size: '',
+								length: '',
+								lastModified: ''
+							})
+							this.changeFile(0)
+						}
 						this.files.splice(this.curIndex, 1) // 删除数组一项，后面元素自动往前挪
 
 						// 判断删除后当前index是否大于文件数，即当前为最后一项而删除了该项
@@ -597,7 +618,7 @@
 									create: true
 								});
 								var deleteFileName = this.fileName
-								
+
 								await targetFileHandle.move(trashFolderHandle); // 将文件移动到 "_删除" 文件夹
 
 							} catch (e) {
