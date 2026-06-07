@@ -1,0 +1,17 @@
+.modalOption {
+    display: flex;
+    flex-direction: row;
+    margin: 5px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
+    transition: all 0.1s ease;
+
+    .modalOptionText{
+        margin-right: auto;
+    }
+}
+
+.modalOption:hover {
+    border-color: #91d5ff;
+}

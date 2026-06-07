@@ -14,21 +14,26 @@
 		<link rel="stylesheet" href="./css/fileDetail.css">
 		<link rel="stylesheet" href="./css/displayerContainer.css">
 		<link rel="stylesheet" href="./css/rightTop.css">
+		<link rel="stylesheet" href="./css/settingsModal.css">
+		<link rel="stylesheet" href="./css/helpModal.css">
+		<link rel="stylesheet" href="./css/createCategoryModal.css">
+		<link rel="stylesheet" href="./css/categoryItem.css">
 
 		<style>
 			.ivu-table .table-selected-row td {
-				background-color: #a6ff9c;
+				background-color: #e6f7ff !important;
 				/* color: #fff; */
 			}
 
-			.fileList {
+			.filesPart {
 				width: 25vw;
 				height: 100vh;
 				max-height: 100vh;
 				max-width: 25vw;
-				background-color: greenyellow;
+				background: linear-gradient(180deg, #fff7e6 0%, #ffe7ba 100%);
 				display: flex;
 				flex-direction: column;
+				border-right: 1px solid #ffd591;
 
 				.ivu-btn-large {
 					font-size: 1rem;
@@ -39,6 +44,24 @@
 					top: 0;
 					left: 0;
 					margin: 2vh;
+					background: #fffeee;
+					box-shadow: 0 3px 8px rgba(250, 140, 22, 0.4);
+					transition: all 0.2s ease;
+				}
+
+				.fileListBtn:hover {
+					background: #ffe7ba;
+					color: #d46b08;
+					border-color: #ffa940;
+				}
+
+				.fileListBtn:active,
+				.fileListBtn:focus {
+					position: absolute;
+					background: #ffd591;
+					color: #ad4e00;
+					border-color: #fa8c16;
+					box-shadow: 0 3px 8px rgba(250, 140, 22, 0.4);
 				}
 
 				/* logo.css */
@@ -49,12 +72,12 @@
 			.middle {
 				width: 50vw;
 				height: 100vh;
-				background-color: aqua;
+				background: linear-gradient(180deg, #fafbfc 0%, #f0f2f5 100%);
 				text-align: center;
 				padding: 1vw;
 
 				.titleContainer {
-					height: 15%;
+					height: 14%;
 					width: 100%;
 					/* background-color: brown; */
 
@@ -62,11 +85,14 @@
 						/* font-size: 6vh; */
 						font-size: 2.5rem;
 						font-weight: bold;
+						color: #1a1a1a;
+						text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 						/* padding-top: 5vh; */
 					}
 
 					.subtitle {
 						font-size: 1rem;
+						color: #666666;
 					}
 
 				}
@@ -75,76 +101,37 @@
 
 			}
 
-			.categories {
+			.categoriesPart {
 				width: 25vw;
 				height: 100vh;
-				background-color: pink;
+				background: linear-gradient(180deg, #e6f7ff 0%, #bae7ff 100%);
 				padding: 10vh 2vw;
 				overflow-y: auto;
+				box-shadow: -2px 0 12px rgba(24, 144, 255, 0.15);
+				border-left: 1px solid #91d5ff;
 
-				.categoryContainer {
-					width: 100%;
-					height: 8vh;
-					/* background-color: antiquewhite; */
-					position: relative;
-					margin-bottom: 7vh;
-
-					.shortcut {
-						background-color: white;
-						border: 2px dashed black;
-						border-radius: 100%;
-						position: absolute;
-						top: -2.5vh;
-						left: -2.5vh;
-						width: 5vh;
-						height: 5vh;
-						z-index: 2;
-					}
-
-					.name {
-						height: 100%;
-						width: 100%;
-						border-radius: 10px;
-						font-size: 2.8vh;
-						position: absolute;
-						white-space: nowrap;
-						overflow: hidden;
-						text-overflow: ellipsis;
-						top: 0;
-						left: 0;
-						z-index: 1;
-						padding: 5px;
-					}
-
-					.delete {
-						height: 5vh;
-						width: 5vh;
-						position: absolute;
-						top: -2.5vh;
-						right: -2.5vh;
-						z-index: 2;
-					}
-				}
+				
 			}
 
-			.modalOption {
-				display: flex;
-				flex-direction: row;
-				margin: 5px;
-			}
+			/* createCategoryModal.css */
+			
+			/* settingsModal.css */
+
+			/* helpModal.css */
 		</style>
 	</head>
 
-	<body style="background-color: #efeeeeaa;">
-		<div id="app" style="display: flex;">
+	<body style="background: linear-gradient(135deg, #e8ecf1 0%, #d9dee4 100%); min-height: 100vh;">
+		<div id="app" style="display: flex; min-height: 100vh;">
 			<link rel="stylesheet" type="text/css" href="https://unpkg.com/view-ui-plus/dist/styles/viewuiplus.css">
 			<script type="text/javascript" src="https://unpkg.com/view-ui-plus"></script>
 
-			<div class="fileList">
+			<div class="filesPart">
 				<!-- 左上角 -->
-				<i-Button class="fileListBtn" size="large" icon="md-folder-open"
-					@click="showFileList = true">文件列表</i-Button>
-				<Image fit='contain' src="./img/logo.png" class="logo"></Image>
+					<i-Button class="fileListBtn" size="large" icon="md-folder-open"
+						@click="showFileList = true">
+						文件列表 (Tab)
+					</i-Button>
 
 				<!-- 文件列表抽屉 -->
 				<Drawer :title="'文件夹: ' + mainFolder.path" placement="left" :closable="false" v-model="showFileList"
@@ -155,49 +142,53 @@
 				</Drawer>
 
 				<div class="fileDetail">
-					<Card :title="files[curIndex].name" shadow icon="md-document" style="height: 100%;">
-						<p class="fileDetailTitle">编号：</p>
-						<p class="fileDetailData">{{ curIndex+1 }}</p>
+					<Card :title=" files[curIndex].name" shadow icon="md-document" style="height: 100%; overflow: hidden;">
 						<p class="fileDetailTitle">大小：</p>
 						<p class="fileDetailData">{{ files[curIndex].size }}</p>
 						<p class="fileDetailTitle">修改时间：</p>
 						<p class="fileDetailData">{{ files[curIndex].lastModified }}</p>
 						<p class="fileDetailTitle">长度：</p>
 						<p class="fileDetailData">{{ files[curIndex].length }}</p>
+
+						<p class="folderPath"><Icon type="md-folder" /> {{ mainFolder.path }}</p>
 					</Card>
 				</div>
+
+				<Image fit='contain' src="./img/logo.png" class="logo"></Image>
 			</div>
 
 			<div class="middle">
 				<div class="titleContainer">
 					<p class="title">分类夹</p>
-					<p class="subtitle" style="margin-bottom: 4vh;">多媒体文件分类工具</p>
+					<p class="subtitle">多媒体文件分类工具</p>
 				</div>
 
 				<div class="displayerContainer">
 					<div class="buttons">
-						<i-Button class="openFolder" type="primary" @click="chooseFolder"
-							style="margin-right: auto;">打开文件夹</i-Button>
+						<i-Button class="openFolder" type="primary" @click="chooseFolder">打开文件夹</i-Button>
+
+						<p class="fileCount">{{ curIndex + 1 }} / {{ files.length }}</p>
 
 						<i-Button class="addCategory" type="primary" @click="newCategory">新增分类</i-Button>
 					</div>
-					<div class="displayer">
-						<!-- <transition name="slide-right">
-							<div v-show="animation.right"> -->
-						<Image class="imgDisplayer" fit='contain' :src="displayerSrc.img" @click="previewImage"
-							v-if="displayType.img" />
-						<audio :src="displayerSrc.audio" controls v-if="displayType.audio" :autoplay="settings.autoplay"
-							volume=0.25>
-							您的浏览器不支持 audio 元素。
-						</audio>
-						<video :src="displayerSrc.video" controls style="width: 100%; height: 100%;"
-							v-if="displayType.video" :autoplay="settings.autoplay" volume=0.5>
-							您的浏览器不支持 video 元素。
-						</video>
-						<!-- </div>
-						</transition> -->
+				<div class="displayer">
+					<!-- <transition name="slide-right">
+						<div v-show="animation.right"> -->
+					<Image class="imgDisplayer" fit='contain' :src="displayerSrc.img" @click="previewImage"
+						v-if="displayType.img" />
+					<audio :src="displayerSrc.audio" controls v-if="displayType.audio" :autoplay="settings.autoplay"
+						volume=0.25 style="width: 100%; border-radius: 8px;">
+						您的浏览器不支持 audio 元素。
+					</audio>
+					<video :src="displayerSrc.video" controls 
+						style="width: 100%; height: 100%; border-radius: 8px; object-fit: contain;"
+						v-if="displayType.video" :autoplay="settings.autoplay" volume=0.5>
+						您的浏览器不支持 video 元素。
+					</video>
+					<!-- </transition>
+					</transition> -->
 
-					</div>
+				</div>
 					<div class="fileTitle">
 						<Image class="fileSwitch" fit='fill' src="./img/arrow.png" alt="<"
 							@click="changeFile(curIndex-1)" />
@@ -212,7 +203,7 @@
 				</div>
 			</div>
 
-			<div class="categories">
+			<div class="categoriesPart">
 				<!-- 右上角 -->
 				<div class="rightTop">
 					<div>
@@ -223,7 +214,7 @@
 					</div>
 				</div>
 
-				<div class="categoryContainer" v-for="(item,index) in categories" :key="index">
+				<div class="categoryItem" v-for="(item,index) in categories" :key="index">
 					<button class="shortcut">{{ item.shortcut }}</button>
 					<!-- <i-Button class="name" @click=""></i-Button> -->
 					<button class="name" @click="move2Folder(item)">{{ item.name }}</button>
@@ -232,70 +223,72 @@
 
 			</div>
 
-			<!-- 新增分类弹窗 -->
-			<Modal footer-hide width=40 v-model="showNewCategory" title="新增分类" scrollable>
-				<div style="display: flex; flex-direction: column;">
-					<div style="display: flex; flex-direction: row; margin: 5px;">
-						<i-Button style="background-color: yellow;" icon="md-folder-open"
-							@click="getCategoryFolder">选择文件夹</i-Button>
-						<i-Input v-model="categoryFolderName" style="width:20vw; margin: 0 0 5px auto;" disabled
-							clearable placeholder="" />
-					</div>
-					<div style="display: flex; flex-direction: row; margin: 5px;">
-						<p>分类名</p>
-						<i-Input v-model="categoryName" style="width:20vw; margin: 0 0 5px auto;" maxlength="20"
-							clearable placeholder="最多20字" />
-					</div>
-					<div style="display: flex; flex-direction: row; margin: 5px;">
-						<i-Button style="" icon="ios-keypad" @click="setShortcut">设置快捷键</i-Button>
-						<i-Input v-model="categoryShortcut" style="width:10vw; margin: 0 0 5px auto;" disabled clearable
-							placeholder="" />
+		<!-- 新增分类弹窗 -->
+		<Modal class="createCategoryModal" footer-hide width=40 v-model="showNewCategory" title="新增分类" scrollable>
+			<div class="modalBody">
+				<div class="formItem">
+					<label class="formLabel">文件夹</label>
+					<div class="formControl">
+						<i-Button icon="md-folder-open" @click="getCategoryFolder" class="folderBtn">选择文件夹</i-Button>
+						<i-Input v-model="categoryFolderName" disabled class="folderInput" placeholder="未选择文件夹" />
 					</div>
 				</div>
-				<i-Button type="success" style="margin-top: 3vh; width: 100%;" @click="comfirmCategory">确认</i-Button>
-			</Modal>
+				<div class="formItem">
+					<label class="formLabel">分类名</label>
+					<div class="formControl">
+						<i-Input v-model="categoryName" maxlength="20" class="nameInput" placeholder="请输入分类名称" />
+					</div>
+				</div>
+				<div class="formItem">
+					<label class="formLabel">快捷键</label>
+					<div class="formControl">
+						<i-Button icon="ios-keypad" @click="setShortcut" class="shortcutBtn">设置快捷键</i-Button>
+						<i-Input v-model="categoryShortcut" disabled class="shortcutInput" placeholder="未设置" />
+					</div>
+				</div>
+			</div>
+			<i-Button type="success" @click="comfirmCategory" class="confirmBtn" long>确认</i-Button>
+		</Modal>
 
 			<!-- 设置弹窗 -->
-			<Modal footer-hide v-model="showSettings" title="设置">
-				<div style="display: flex; flex-direction: column;">
+			<Modal footer-hide v-model="showSettings" title="设置" class="settingsModal">
 					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">删除时弹出确认弹窗</p>
+						<p class="modalOptionText">删除时弹出确认弹窗</p>
 						<i-Switch v-model="settings.deleteConfirm" />
 					</div>
 					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">使用"_删除"文件夹</p>
+						<p class="modalOptionText">使用"_删除"文件夹</p>
 						<i-Switch v-model="settings.useDeleteFolder" />
 					</div>
 					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">音频视频自动播放</p>
+						<p class="modalOptionText">音频视频自动播放</p>
 						<i-Switch v-model="settings.autoplay" />
 					</div>
 					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">输入框失去焦点时执行重命名</p>
+						<p class="modalOptionText">输入框失去焦点时执行重命名</p>
 						<i-Switch v-model="settings.loseFocusRename" />
 					</div>
 					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">排序后维持在当前文件</p>
+						<p class="modalOptionText">排序后维持在当前文件</p>
 						<i-Switch v-model="settings.sortStay" />
 					</div>
 					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">递归打开文件夹</p>
+						<p class="modalOptionText">递归打开文件夹</p>
 						<i-Switch v-model="settings.folderRecursion" />
 					</div>
 					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">忽略不可预览文件（图片音频视频以外的）</p>
+						<p class="modalOptionText">忽略不可预览文件（图片音频视频以外的）</p>
 						<i-Switch v-model="settings.ignoreOtherFile" />
 					</div>
 					<div class="modalOption">
-						<p style="margin: 4px; margin-right: auto;">报错信息弹窗</p>
+						<p class="modalOptionText">报错信息弹窗</p>
 						<i-Switch v-model="settings.errorInfo" />
 					</div>
-				</div>
 			</Modal>
 
 			<!-- 说明弹窗 -->
-			<Modal footer-hide v-model="showHelp" title="说明" scrollable>
-				<div style="display: flex; flex-direction: column;">
+			<Modal footer-hide v-model="showHelp" title="说明" scrollable class="helpModal">
+				<div class="modalFlexColumn">
 					<h3>网站操作快捷键:</h3>
 					<span><strong>> Tab: </strong>打开文件列表</span>
 					<span><strong>> 左右箭头: </strong>切换左右文件</span>

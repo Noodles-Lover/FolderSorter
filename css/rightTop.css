@@ -4,9 +4,22 @@
 	top: 0;
 	right: 0;
 	display: flex;
+	padding: 8px;
+	gap: 4px;
 	
 	.ivu-icon{
 		margin: 0.3rem;
 		font-size: 2.2rem;	/* 图标大小 */
+		cursor: pointer;
+		transition: all 0.2s ease;
+		color: #595959;
+		padding: 4px;
+		border-radius: 6px;
+	}
+
+	.ivu-icon:hover{
+		color: #096dd9;
+		background-color: rgba(9, 109, 217, 0.08);
+		transform: scale(1.1);
 	}
 }

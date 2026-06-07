@@ -1,0 +1,54 @@
+/* 新增分类弹窗样式 */
+.createCategoryModal {
+	.ivu-modal-body {
+		padding: 20px 24px;
+	}
+
+	.modalBody {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+
+	.formItem {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.formLabel {
+		font-size: 1rem;
+		font-weight: 600;
+		color: #595959;
+	}
+
+	.formControl {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+
+		.folderBtn,
+		.shortcutBtn {
+			flex-shrink: 0;
+			background: #f0f0f0;
+			border-color: #d9d9d9;
+			color: #595959;
+
+			&:hover {
+				background: #e0e0e0;
+				border-color: #c0c0c0;
+			}
+		}
+	}
+
+	.nameInput {
+		width: 100%;
+	}
+
+	.confirmBtn {
+		height: 6vh;
+		margin-top: 2vh;
+		font-size: 1rem;
+		font-weight: 500;
+	}
+}
