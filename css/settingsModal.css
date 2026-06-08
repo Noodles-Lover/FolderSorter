@@ -42,3 +42,15 @@
 .modalOption:hover::after {
     opacity: 0.9;
 }
+
+/* 设置按钮容器 */
+.settingsButtons {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e8e8e8;
+}
+
+.settingsButtons .ivu-btn {
+    display: block;
+    margin-bottom: 8px;
+}
