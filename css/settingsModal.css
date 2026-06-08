@@ -1,56 +1,58 @@
-.settingsModal .modalOption {
-    display: flex;
-    flex-direction: row;
-    margin: 5px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
-    transition: all 0.1s ease;
-    position: relative;
-}
+.settingsModal {
+	.modalOption {
+		display: flex;
+		flex-direction: row;
+		margin: 5px;
+		padding: 8px 12px;
+		border-radius: 8px;
+		border: 1px solid #e8e8e8;
+		transition: all 0.1s ease;
+		position: relative;
 
-.settingsModal .modalOption .modalOptionText {
-    margin-right: auto;
-    flex: 1;
-}
+		.modalOptionText {
+			margin-right: auto;
+			flex: 1;
+		}
 
-.modalOption:hover {
-    border-color: #91d5ff;
-}
+		&:hover {
+			border-color: #91d5ff;
+		}
 
-/* CSS Tooltip样式 */
-.modalOption::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.75);
-    color: white;
-    padding: 6px 10px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    /* white-space: pre-line; */
-    max-width: 50vw;
-    z-index: 1000;
-    opacity: 0; 
-    pointer-events: none;
-    transition: opacity 0.2s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
+		/* CSS Tooltip样式 */
+		&::after {
+			content: attr(data-tooltip);
+			position: absolute;
+			bottom: 100%;
+			left: 50%;
+			transform: translateX(-50%);
+			background-color: rgba(0, 0, 0, 0.75);
+			color: white;
+			padding: 6px 10px;
+			border-radius: 4px;
+			font-size: 0.85rem;
+			/* white-space: pre-line; */
+			max-width: 50vw;
+			z-index: 1000;
+			opacity: 0; 
+			pointer-events: none;
+			transition: opacity 0.2s;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+		}
 
-.modalOption:hover::after {
-    opacity: 0.9;
-}
+		&:hover::after {
+			opacity: 0.9;
+		}
+	}
 
-/* 设置按钮容器 */
-.settingsButtons {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #e8e8e8;
-}
+	/* 设置按钮容器 */
+	.settingsButtons {
+		margin-top: 16px;
+		padding-top: 16px;
+		border-top: 1px solid #e8e8e8;
 
-.settingsButtons .ivu-btn {
-    display: block;
-    margin-bottom: 8px;
+		.ivu-btn {
+			display: block;
+			margin-bottom: 8px;
+		}
+	}
 }

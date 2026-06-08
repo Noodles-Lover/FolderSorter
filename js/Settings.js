@@ -68,11 +68,4 @@ class Settings {
         return { ...this.defaultSettings };
     }
 
-    /**
-     * 获取默认设置
-     * @returns {Object} 默认设置对象
-     */
-    getDefaults() {
-        return { ...this.defaultSettings };
-    }
 }

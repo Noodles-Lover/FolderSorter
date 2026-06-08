@@ -47,48 +47,61 @@ async function verifyPermission(fileHandle) {
 }
 
 async function openFolder(folderHandle, isRecursion, ignoreOtherFile) {
-	let folderFiles = []
+	let folderFiles = []	// 最终返回
+	let promises = []; 		// 收集所有异步Promise
+	let fileHandles = []; 	// 收集所有文件句柄
+	let dirHandles = []; 	// 收集所有目录句柄
 
+	// 先收集所有的句柄，避免for await阻塞
 	for await (const fileHandle of folderHandle.values()) {
-		// 用fileHandle遍历文件夹内的文件（FileSystemFileHandle类）
-		console.log(`Entry name: ${fileHandle.name}, Entry kind: ${fileHandle.kind}`);
-
-		if (fileHandle.kind === 'file') { // 处理文件
-			const file = await fileHandle.getFile();
-
-			if (ignoreOtherFile) {
-				// 如果不是三种媒体文件，直接返回
-				if (!(file.type.startsWith('image') || file.type.startsWith('audio') || file.type.startsWith(
-						'video') || file.type.endsWith('.mov'))) continue
-			}
-
-			getMediaDuration(file).then(duration => {
-				folderFiles.push({
-					fileHandle: fileHandle,
-					name: file.name,
-					size: formatFileSize(file.size),
-					length: formatDuration(duration),
-					lastModified: new Date(file.lastModified)
-						.toLocaleString()
-				})
-				// console.log('媒体长度为：', duration, '秒');
-			}).catch(error => {
-				// this.$Message.error('获取媒体长度失败');
-				console.error('获取媒体长度失败:', error);
-			});
-
-		} else if (fileHandle.kind === 'directory') {	// 子目录
-			if (fileHandle.name == "_删除") continue		// 网站创建的"_删除"文件夹
-			
-			if (isRecursion) {	// 递归文件夹
-				let subFiles = await openFolder(fileHandle, true, ignoreOtherFile)
-				folderFiles = folderFiles.concat(subFiles)
-			}
+		if (fileHandle.kind === 'file') {
+			fileHandles.push(fileHandle);
+		} else if (fileHandle.kind === 'directory') {
+			if (fileHandle.name == "_删除") continue;
+			dirHandles.push(fileHandle);
 		}
 	}
+
+	// 分批处理文件，每批10个，避免阻塞主线程
+	for (let i = 0; i < fileHandles.length; i++) {
+		const fileHandle = fileHandles[i];
+		const file = await fileHandle.getFile();
+
+		if (ignoreOtherFile) {
+			if (!(file.type.startsWith('image') || file.type.startsWith('audio') || file.type.startsWith(
+				'video') || file.name.endsWith('.mov'))) continue;
+		}
+
+		// 收集Promise
+		const promise = getMediaDuration(file).then(duration => {
+			folderFiles.push({
+				fileHandle: fileHandle,
+				name: file.name,
+				size: formatFileSize(file.size),
+				length: formatDuration(duration),
+				lastModified: new Date(file.lastModified).toLocaleString()
+			});
+		}).catch(error => {
+			console.error('获取媒体长度失败:', error);
+		});
+
+		promises.push(promise);
+	}
+
+	
+	// 处理子目录（递归）
+	if (isRecursion) {
+		for (const dirHandle of dirHandles) {
+			let subFiles = await openFolder(dirHandle, true, ignoreOtherFile);
+			folderFiles = folderFiles.concat(subFiles);
+		}
+	}
+
+	// 等待所有Promise完成，确保folderFiles完整
+	await Promise.all(promises);
+
 	return folderFiles
 }
 
 // function getSumSize(folderHandle){
-
 // }

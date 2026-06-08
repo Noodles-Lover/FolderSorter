@@ -20,6 +20,7 @@
 	<link rel="stylesheet" href="./css/helpModal.css">
 	<link rel="stylesheet" href="./css/createCategoryModal.css">
 	<link rel="stylesheet" href="./css/categoryItem.css">
+	<link rel="stylesheet" href="./css/loadingOverlay.css">
 
 	<style>
 		/* 文件列表选择文件行样式 */
@@ -130,6 +131,14 @@
 </head>
 
 <body style="background: linear-gradient(135deg, #e8ecf1 0%, #d9dee4 100%); min-height: 100vh;">
+	<!-- 加载遮罩层 - 在body内，不依赖Vue应用 -->
+	<div id="loadingOverlay" class="loadingOverlay">
+		<div class="loadingContent">
+			<div class="loadingIcon">↻</div>
+			<p class="loadingText">正在加载文件，请稍候...</p>
+		</div>
+	</div>
+	
 	<div id="app" style="display: flex; min-height: 100vh;">
 		<link rel="stylesheet" type="text/css" href="https://unpkg.com/view-ui-plus/dist/styles/viewuiplus.css">
 		<script type="text/javascript" src="https://unpkg.com/view-ui-plus"></script>
@@ -381,6 +390,12 @@
 						this.mainFolder.path = handle.name;
 						this.mainFolder.handler = handle;
 
+						// 显示加载遮罩层（使用原生JS，不依赖Vue）
+						document.getElementById('loadingOverlay').style.display = 'flex';
+						
+						// 等待浏览器绘制（使用setTimeout给浏览器足够时间绘制loading）
+						await new Promise(resolve => setTimeout(resolve, 100));
+
 						const msg = this.$Message.loading({
 							content: '加载文件中...',
 							duration: 0
@@ -404,14 +419,22 @@
 						this.displayFiles = this.pagination.getCurrentPageItems();
 
 						// console.log(JSON.parse(JSON.stringify(this.files)))
-						this.showFileList = true;
 						this.changeFile(0);
 						setTimeout(msg, 0);
+						
+						// 隐藏加载遮罩层
+						document.getElementById('loadingOverlay').style.display = 'none';
+						
+						// 显示文件列表
+						this.showFileList = true;
 					} catch (e) {
 						// 用户拒绝查看文件或报错
 						console.log(e)
 						this.$Message.error('打开文件夹失败！');
 						if (this.settings.errorInfo) this.$Message.error(e.toString());
+						
+						// 隐藏加载遮罩层
+						document.getElementById('loadingOverlay').style.display = 'none';
 					}
 				},
 				displayerInitialize() {
