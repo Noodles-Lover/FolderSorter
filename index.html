@@ -9,6 +9,7 @@
 		<!-- js和css文件导入 -->
 		<script src="js/format.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/support.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/Pagination.js" type="text/javascript" charset="utf-8"></script>
 
 		<link rel="stylesheet" href="./css/logo.css">
 		<link rel="stylesheet" href="./css/fileDetail.css">
@@ -20,8 +21,9 @@
 		<link rel="stylesheet" href="./css/categoryItem.css">
 
 		<style>
+			/* 文件列表选择文件行样式 */
 			.ivu-table .table-selected-row td {
-				background-color: #e6f7ff !important;
+				background-color: #9fe1ff !important;
 				/* color: #fff; */
 			}
 
@@ -67,6 +69,12 @@
 				/* logo.css */
 
 				/* fileDetail.css */
+			}
+
+			/* 分页组件样式 */
+			.paginationContainer {
+				text-align: center;
+				margin: 4px;
 			}
 
 			.middle {
@@ -136,13 +144,25 @@
 				<!-- 文件列表抽屉 -->
 				<Drawer :title="'文件夹: ' + mainFolder.path" placement="left" :closable="false" v-model="showFileList"
 					width=50>
-					<i-Table border show-header :height="tableHeight" :columns="columns" :data="files" highlight-row
+					<i-Table border show-header :height="tableHeight" :columns="columns" :data="displayFiles" highlight-row
 						@on-row-dblclick="clickedFile" @on-sort-change="sortChange"
 						:row-class-name="rowClassName"></i-Table>
+					<!-- 分页组件 -->
+					<div class="paginationContainer" v-if="pagination.getTotalPages() > 1">
+						<Page :total="pagination.getPaginationInfo().totalItems"
+							:page-size="pagination.pageSize"
+							:current="pagination.currentPage"
+							@on-change="changePage"
+							show-total
+							show-elevator
+							show-sizer
+							@on-page-size-change="changePageSize"
+							:page-size-opts="[20, 50, 100, 200]"/>
+					</div>
 				</Drawer>
 
 				<div class="fileDetail">
-					<Card :title=" files[curIndex].name" shadow icon="md-document" style="height: 100%; overflow: hidden;">
+					<Card :title=" files[curIndex].name" icon="md-document" style="height: 100%; overflow: hidden;">
 						<p class="fileDetailTitle">大小：</p>
 						<p class="fileDetailData">{{ files[curIndex].size }}</p>
 						<p class="fileDetailTitle">修改时间：</p>
@@ -250,41 +270,41 @@
 			<i-Button type="success" @click="comfirmCategory" class="confirmBtn" long>确认</i-Button>
 		</Modal>
 
-			<!-- 设置弹窗 -->
-			<Modal footer-hide v-model="showSettings" title="设置" class="settingsModal">
-					<div class="modalOption">
+		<!-- 设置弹窗 -->
+		<Modal footer-hide v-model="showSettings" title="设置" class="settingsModal">
+				<div class="modalOption" data-tooltip="删除文件前会弹出确认对话框，防止误删">
 						<p class="modalOptionText">删除时弹出确认弹窗</p>
 						<i-Switch v-model="settings.deleteConfirm" />
-					</div>
-					<div class="modalOption">
+				</div>
+				<div class="modalOption" data-tooltip="删除的文件会移动到'_删除'文件夹，可在整理完成后手动删除该文件夹，若关闭则会**永久**删除文件（不进入回收桶）">
 						<p class="modalOptionText">使用"_删除"文件夹</p>
 						<i-Switch v-model="settings.useDeleteFolder" />
-					</div>
-					<div class="modalOption">
+				</div>
+				<div class="modalOption" data-tooltip="切换到音频或视频文件时自动开始播放">
 						<p class="modalOptionText">音频视频自动播放</p>
 						<i-Switch v-model="settings.autoplay" />
-					</div>
-					<div class="modalOption">
+				</div>
+				<div class="modalOption" data-tooltip="修改文件名后，点击其他地方（失去焦点）会自动保存重命名，无需按Enter">
 						<p class="modalOptionText">输入框失去焦点时执行重命名</p>
 						<i-Switch v-model="settings.loseFocusRename" />
-					</div>
-					<div class="modalOption">
+				</div>
+				<div class="modalOption" data-tooltip="对文件列表排序后，保持当前选中的文件不变，而不是跳转到第一个文件">
 						<p class="modalOptionText">排序后维持在当前文件</p>
 						<i-Switch v-model="settings.sortStay" />
-					</div>
-					<div class="modalOption">
+				</div>
+				<div class="modalOption" data-tooltip="打开文件夹时，会递归读取子文件夹中的文件">
 						<p class="modalOptionText">递归打开文件夹</p>
 						<i-Switch v-model="settings.folderRecursion" />
-					</div>
-					<div class="modalOption">
-						<p class="modalOptionText">忽略不可预览文件（图片音频视频以外的）</p>
+				</div>
+				<div class="modalOption" data-tooltip="只显示图片、音频、视频文件，忽略其他类型文件（如文档、压缩包等）">
+						<p class="modalOptionText">忽略不可预览文件</p>
 						<i-Switch v-model="settings.ignoreOtherFile" />
-					</div>
-					<div class="modalOption">
+				</div>
+				<div class="modalOption" data-tooltip="操作失败时会弹出详细错误信息，方便调试">
 						<p class="modalOptionText">报错信息弹窗</p>
 						<i-Switch v-model="settings.errorInfo" />
-					</div>
-			</Modal>
+				</div>
+		</Modal>
 
 			<!-- 说明弹窗 -->
 			<Modal footer-hide v-model="showHelp" title="说明" scrollable class="helpModal">
@@ -317,7 +337,7 @@
 						categoryFolderHandle: null,
 						categoryShortcut: "",
 						checkingShortcut: false,
-						tableHeight: window.innerHeight - window.innerHeight * 0.15,
+						tableHeight: window.innerHeight - window.innerHeight * 0.18,
 						isFocused: false,
 						fileName: "",
 						displayerSrc: {
@@ -331,46 +351,16 @@
 							video: false
 						},
 						curIndex: 0,
-						columns: [{
-								type: 'index',
-								width: 80,
-								align: 'center',
-								fixed: 'left'
-							},
-							{
-								title: '文件名',
-								key: 'name',
-								fixed: 'left',
-								resizable: true,
-							},
-							{
-								title: '大小',
-								key: 'size',
-								width: 110,
-								resizable: true,
-								sortable: 'custom',
-							},
-							{
-								title: '长度',
-								key: 'length',
-								width: 95,
-								resizable: true,
-								sortable: 'custom'
-							},
-							{
-								title: '修改时间',
-								key: 'lastModified',
-								sortable: 'custom'
-							}
-						],
-						files: [{
-							fileHandle: null, // FileSystemFileHandle
-							name: 'Noodles',
-							size: '999999 GB',
-							length: '-1',
-							lastModified: '2077-08-19'
-						}, ],
-						settings: {
+					files: [{
+						fileHandle: null, // FileSystemFileHandle
+						name: 'Noodles',
+						size: '999999 GB',
+						length: '-1',
+						lastModified: '2077-08-19'
+					}],
+					displayFiles: [],
+					pagination: new Pagination(50),
+					settings: {
 							deleteConfirm: true,
 							loseFocusRename: false,
 							sortStay: false,
@@ -418,6 +408,10 @@
 							}
 							console.log(this.files)
 
+							// 更新分页
+							this.pagination.setItems(this.files);
+							this.displayFiles = this.pagination.getCurrentPageItems();
+
 							// console.log(JSON.parse(JSON.stringify(this.files)))
 							this.showFileList = true;
 							this.changeFile(0);
@@ -429,7 +423,7 @@
 							if (this.settings.errorInfo) this.$Message.error(e.toString());
 						}
 					},
-					displayInitialize() {
+					displayerInitialize() {
 						this.displayType.img = false
 						this.displayType.audio = false
 						this.displayType.video = false
@@ -446,7 +440,7 @@
 						this.fileName = this.files[index].name;
 
 						// displayer各数据初始化
-						this.displayInitialize()
+						this.displayerInitialize()
 
 						let file
 						// try {
@@ -479,7 +473,10 @@
 					},
 					clickedFile(data, index) { // 在文件列表点击文件
 						this.showFileList = false;
-						this.changeFile(index)
+						// index是displayFiles中的索引，需要转换为files中的索引
+						const fileInDisplay = this.displayFiles[index];
+						const realIndex = this.files.findIndex(f => f.fileHandle === fileInDisplay.fileHandle);
+						this.changeFile(realIndex);
 					},
 					async sortChange(data) {
 						// data: 一字典：column：当前列数据 key：排序依据的指标 order：排序的顺序，值为 asc 或 desc
@@ -543,10 +540,15 @@
 								this.changeFile(0)
 							}
 						}
+
+						// 更新分页
+						this.pagination.setItems(this.files);
+						this.displayFiles = this.pagination.getCurrentPageItems();
 					},
 					rowClassName(row, index) {
-						// alert(index)
-						if (index == this.curIndex) {
+						// row是displayFiles[index]，需要检查它是否是files[curIndex]
+						const fileInDisplay = this.displayFiles[index];
+						if (fileInDisplay && fileInDisplay.fileHandle === this.files[this.curIndex]?.fileHandle) {
 							return 'table-selected-row';
 						}
 						return ''
@@ -582,6 +584,10 @@
 						// 判断删除后当前index是否大于文件数，即当前为最后一项而删除了该项
 						if (this.curIndex >= this.files.length) this.curIndex = this.files.length - 1
 						await this.changeFile(this.curIndex)
+
+						// 更新分页
+						this.pagination.setItems(this.files);
+						this.displayFiles = this.pagination.getCurrentPageItems();
 					},
 					async clickedDelete() {
 						if (this.settings.deleteConfirm) {
@@ -770,7 +776,19 @@
 								return
 							}
 						}
-					}
+					},
+
+					// 分页相关方法
+					changePage(page) {
+						this.pagination.gotoPage(page);
+						this.displayFiles = this.pagination.getCurrentPageItems();
+					},
+
+					changePageSize(pageSize) {
+						this.pagination.pageSize = pageSize;
+						this.pagination.currentPage = 1; // 重置到第一页
+						this.displayFiles = this.pagination.getCurrentPageItems();
+					},
 				},
 				mounted() {
 					document.addEventListener('keydown', this.handleKeyDown);
@@ -783,6 +801,57 @@
 				},
 				beforeDestroy() {
 					document.removeEventListener('keydown', this.handleKeyDown);
+				},
+				computed: {
+					columns() {
+						// 访问响应式属性以建立依赖，这样currentPage变化时会重新计算
+						const currentPage = this.pagination.currentPage;
+						const pageSize = this.pagination.pageSize;
+						return [{
+							title: '序号',
+							width: 65,
+							align: 'center',
+							fixed: 'left',
+							render: (h, params) => {
+								return h('span', (currentPage - 1) * pageSize + params.index + 1);
+							}
+						},
+						{
+							title: '文件名',
+							key: 'name',
+							fixed: 'left',
+							resizable: true,
+						},
+						{
+							title: '大小',
+							key: 'size',
+							width: 110,
+							resizable: true,
+							sortable: 'custom',
+						},
+						{
+							title: '长度',
+							key: 'length',
+							width: 95,
+							resizable: true,
+							sortable: 'custom'
+						},
+						{
+							title: '修改时间',
+							key: 'lastModified',
+							sortable: 'custom'
+						}]
+					}
+				},
+				watch: {
+					showFileList(newVal) {
+						if (newVal) {
+							// 打开文件列表时，跳转到当前文件所在页
+							const targetPage = Math.floor(this.curIndex / this.pagination.pageSize) + 1;
+							this.pagination.gotoPage(targetPage);
+							this.displayFiles = this.pagination.getCurrentPageItems();
+						}
+					}
 				},
 			});
 			app.use(ViewUIPlus);
