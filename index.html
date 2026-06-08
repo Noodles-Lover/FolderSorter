@@ -164,18 +164,39 @@
 			</Drawer>
 
 			<div class="fileDetail">
-				<Card :title=" files[curIndex].name" icon="md-document" style="height: 100%; overflow: hidden;">
-					<p class="fileDetailTitle">大小：</p>
-					<p class="fileDetailData">{{ files[curIndex].size }}</p>
-					<p class="fileDetailTitle">修改时间：</p>
-					<p class="fileDetailData">{{ files[curIndex].lastModified }}</p>
-					<p class="fileDetailTitle">长度：</p>
-					<p class="fileDetailData">{{ files[curIndex].length }}</p>
+				<!-- 上一个文件名 - 放在最上方 -->
+				 <p style="margin: 0 auto;">↑</p>
+				<div class="adjacentFile prevFile" v-if="curIndex > 0">
+					{{ files[curIndex - 1].name }}
+				</div>
+				<div class="adjacentFile prevFile" v-else>
+					无
+				</div>
+				
+				<!-- 卡片区域 - 居中 -->
+				<div class="fileDetailCard">
+					<Card :title="files[curIndex].name" icon="md-document" class="fileDetailCard">
+						<p class="fileDetailTitle">大小：</p>
+						<p class="fileDetailData">{{ files[curIndex].size }}</p>
+						<p class="fileDetailTitle">修改时间：</p>
+						<p class="fileDetailData">{{ files[curIndex].lastModified }}</p>
+						<p class="fileDetailTitle">长度：</p>
+						<p class="fileDetailData">{{ files[curIndex].length }}</p>
 
-					<p class="folderPath">
-						<Icon type="md-folder"></Icon> {{ mainFolder.path }}
-					</p>
-				</Card>
+						<p class="folderPath">
+							<Icon type="md-folder"></Icon> {{ mainFolder.path }}
+						</p>
+					</Card>
+				</div>
+				
+				<!-- 下一个文件名 - 放在最下方 -->
+				<div class="adjacentFile nextFile" v-if="curIndex < files.length - 1">
+					{{ files[curIndex + 1].name }}
+				</div>
+				<div class="adjacentFile nextFile" v-else>
+					无
+				</div>
+				<p style="margin: 0 auto;">↓</p>
 			</div>
 
 			<Image fit='contain' src="./img/logo.png" class="logo"></Image>
