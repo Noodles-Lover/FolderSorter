@@ -369,6 +369,7 @@
 					tableHeight: window.innerHeight - window.innerHeight * 0.18,
 					isFocused: false,
 					fileName: "",
+					fileExtension: "",
 					displayerSrc: {
 						img: "",
 						audio: "",
@@ -472,7 +473,16 @@
 						return;
 					}
 					this.curIndex = index;
-					this.fileName = this.files[index].name;
+					// 去掉文件后缀显示
+					const fullName = this.files[index].name;
+					const lastDotIndex = fullName.lastIndexOf('.');
+					if (lastDotIndex > 0) {
+						this.fileName = fullName.substring(0, lastDotIndex);
+						this.fileExtension = fullName.substring(lastDotIndex); // 包含点号
+					} else {
+						this.fileName = fullName;
+						this.fileExtension = '';
+					}
 
 					// displayer各数据初始化
 					this.displayerInitialize()
@@ -591,8 +601,13 @@
 				async renameFile() {
 					// this.$Message.success('rename');
 					let fileHandle = this.files[this.curIndex].fileHandle
+					// 自动加上文件后缀
+					let newFileName = this.fileName;
+					if (this.fileExtension && !newFileName.endsWith(this.fileExtension)) {
+						newFileName = newFileName + this.fileExtension;
+					}
 					try {
-						await fileHandle.move(this.mainFolder.handler, this.fileName);
+						await fileHandle.move(this.mainFolder.handler, newFileName);
 					} catch (e) {
 						console.error('重命名失败:', e);
 						this.$Message.error('重命名失败');
@@ -600,8 +615,8 @@
 						return
 					}
 
-					this.files[this.curIndex].name = this.fileName
-					this.$Message.success(`成功重命名文件为 [${this.fileName}]`);
+					this.files[this.curIndex].name = newFileName
+					this.$Message.success(`成功重命名文件为 [${newFileName}]`);
 				},
 				async removeFileInFileList() {
 					if (this.files.length == 1) {
