@@ -21,6 +21,7 @@
 	<link rel="stylesheet" href="./css/createCategoryModal.css">
 	<link rel="stylesheet" href="./css/categoryItem.css">
 	<link rel="stylesheet" href="./css/loadingOverlay.css">
+	<link rel="stylesheet" href="./css/operationOverlay.css">
 
 	<style>
 		/* 文件列表选择文件行样式 */
@@ -85,6 +86,7 @@
 			background: linear-gradient(180deg, #fafbfc 0%, #f0f2f5 100%);
 			text-align: center;
 			padding: 1vw;
+			position: relative; /* 让 operationOverlay 的 absolute 定位相对于此 */
 
 			.titleContainer {
 				height: 14%;
@@ -131,14 +133,13 @@
 </head>
 
 <body style="background: linear-gradient(135deg, #e8ecf1 0%, #d9dee4 100%); min-height: 100vh;">
-	<!-- 加载遮罩层 - 在body内，不依赖Vue应用 -->
+	<!-- 加载遮罩层 - 在body内，不依赖Vue应用（用于打开文件夹） -->
 	<div id="loadingOverlay" class="loadingOverlay">
 		<div class="loadingContent">
 			<div class="loadingIcon">↻</div>
 			<p class="loadingText">正在加载文件，请稍候...</p>
 		</div>
 	</div>
-	
 	<div id="app" style="display: flex; min-height: 100vh;">
 		<link rel="stylesheet" type="text/css" href="https://unpkg.com/view-ui-plus/dist/styles/viewuiplus.css">
 		<script type="text/javascript" src="https://unpkg.com/view-ui-plus"></script>
@@ -202,8 +203,16 @@
 			<Image fit='contain' src="./img/logo.png" class="logo"></Image>
 		</div>
 
-		<div class="middle">
-			<div class="titleContainer">
+	<div class="middle">
+		<!-- 操作遮罩层 - 只在.middle区域内显示（用于分类/删除操作） -->
+		<div id="operationOverlay" class="operationOverlay">
+			<div class="loadingContent">
+				<div class="loadingIcon">↻</div>
+				<p class="loadingText">{{ loadingText }}</p>
+			</div>
+		</div>
+
+		<div class="titleContainer">
 				<p class="title">分类夹</p>
 				<p class="subtitle">多媒体文件分类工具</p>
 			</div>
@@ -238,7 +247,8 @@
 					<Image class="fileSwitch" fit='fill' src="./img/arrow.png" alt="<"
 						@click="changeFile(curIndex-1)" />
 					<div class="inputContainer">
-						<i-Input class="fileName" v-model="fileName" border icon="md-create" @on-enter="renameFile"
+						<!-- v-model 绑定计算属性，显示不含扩展名，输入时自动补扩展名 -->
+						<i-Input class="fileName" v-model="displayFileName" border icon="md-create" @on-enter="renameFile"
 							@on-focus="handleFocus" @on-blur="handleBlur" />
 					</div>
 					<Image id="rightArrow" class="fileSwitch" fit='fill' src="./img/arrow.png" alt="<"
@@ -396,6 +406,8 @@
 						right: true,
 						delete: true,
 					},
+					isOperating: false, // 是否正在执行操作（分类/删除），用于显示加载动画并阻塞操作
+					loadingText: '分类中...', // 加载遮罩层的文案（分类/删除操作时显示）
 
 					showFileList: false,
 					showNewCategory: false,
@@ -404,62 +416,69 @@
 				}
 			},
 			methods: {
-				async chooseFolder() {
-					try {
-						// 获得文件夹的句柄
-						const handle = await window.showDirectoryPicker(); // FileSystemDirectoryHandle
-						this.files = []
-						this.mainFolder.path = handle.name;
-						this.mainFolder.handler = handle;
+			async chooseFolder() {
+				try {
+					// 获得文件夹的句柄
+					const handle = await window.showDirectoryPicker(); // FileSystemDirectoryHandle
+					this.files = []
+					this.mainFolder.path = handle.name;
+					this.mainFolder.handler = handle;
 
-						// 显示加载遮罩层（使用原生JS，不依赖Vue）
-						document.getElementById('loadingOverlay').style.display = 'flex';
-						
-						// 等待浏览器绘制（使用setTimeout给浏览器足够时间绘制loading）
-						await new Promise(resolve => setTimeout(resolve, 100));
+					// 显示加载遮罩层（使用原生JS，不依赖Vue）
+					this.loadingText = '加载文件中...';
+					document.getElementById('loadingOverlay').style.display = 'flex';
+					
+					// 等待浏览器绘制（使用setTimeout给浏览器足够时间绘制loading）
+					await new Promise(resolve => setTimeout(resolve, 100));
 
-						const msg = this.$Message.loading({
-							content: '加载文件中...',
-							duration: 0
-						});
 
-						this.files = await openFolder(handle, this.settings.folderRecursion, this.settings
-							.ignoreOtherFile)
-						if (this.files.length <= 0) {
-							this.files.push({
-								fileHandle: null, // FileSystemFileHandle
-								name: '无',
-								size: '',
-								length: '',
-								lastModified: ''
-							})
-						}
-						console.log(this.files)
-
-						// 更新分页
-						this.pagination.setItems(this.files);
-						this.displayFiles = this.pagination.getCurrentPageItems();
-
-						// console.log(JSON.parse(JSON.stringify(this.files)))
-						this.changeFile(0);
-						setTimeout(msg, 0);
-						
-						// 隐藏加载遮罩层
-						document.getElementById('loadingOverlay').style.display = 'none';
-						
-						// 显示文件列表
-						this.showFileList = true;
-					} catch (e) {
-						// 用户拒绝查看文件或报错
-						console.log(e)
-						this.$Message.error('打开文件夹失败！');
-						if (this.settings.errorInfo) this.$Message.error(e.toString());
-						
-						// 隐藏加载遮罩层
-						document.getElementById('loadingOverlay').style.display = 'none';
+					this.files = await openFolder(handle, this.settings.folderRecursion, this.settings
+						.ignoreOtherFile)
+					if (this.files.length <= 0) {
+						this.files.push({
+							fileHandle: null, // FileSystemFileHandle
+							name: '无',
+							size: '',
+							length: '',
+							lastModified: ''
+						})
 					}
-				},
+					console.log(this.files)
+
+					// 更新分页
+					this.pagination.setItems(this.files);
+					this.displayFiles = this.pagination.getCurrentPageItems();
+
+					// console.log(JSON.parse(JSON.stringify(this.files)))
+					this.changeFile(0);
+					
+					// 隐藏加载遮罩层
+					document.getElementById('loadingOverlay').style.display = 'none';
+					
+					// 显示文件列表
+					this.showFileList = true;
+				} catch (e) {
+					// 用户拒绝查看文件或报错
+					console.log(e)
+					this.$Message.error('打开文件夹失败！');
+					if (this.settings.errorInfo) this.$Message.error(e.toString());
+					
+					// 隐藏加载遮罩层
+					document.getElementById('loadingOverlay').style.display = 'none';
+				}
+			},
 				displayerInitialize() {
+					// 先撤销对象URL，再重置状态
+					if (this.displayerSrc.img) {
+						URL.revokeObjectURL(this.displayerSrc.img);
+					}
+					if (this.displayerSrc.audio) {
+						URL.revokeObjectURL(this.displayerSrc.audio);
+					}
+					if (this.displayerSrc.video) {
+						URL.revokeObjectURL(this.displayerSrc.video);
+					}
+					
 					this.displayType.img = false
 					this.displayType.audio = false
 					this.displayType.video = false
@@ -467,17 +486,33 @@
 					this.displayerSrc.audio = ""
 					this.displayerSrc.video = ""
 				},
-				async changeFile(index) {
-					if (index < 0 || index >= this.files.length) {
-						this.$Message.error('超出文件夹范围！');
-						return;
+				// 释放文件句柄（撤销对象URL，暂停媒体）
+				releaseFileHandle() {
+					if (this.displayerSrc.img) {
+						URL.revokeObjectURL(this.displayerSrc.img);
 					}
-					this.curIndex = index;
-					// 去掉文件后缀显示
+					if (this.displayerSrc.audio) {
+						URL.revokeObjectURL(this.displayerSrc.audio);
+					}
+					if (this.displayerSrc.video) {
+						URL.revokeObjectURL(this.displayerSrc.video);
+					}
+				},
+		async changeFile(index) {
+			// 如果正在执行操作（分类/删除），阻止切换文件
+			if (this.isOperating) {
+				return;
+			}
+				if (index < 0 || index >= this.files.length) {
+					this.$Message.error('超出文件夹范围！');
+					return;
+				}
+				this.curIndex = index;
+					// fileName 存储完整文件名（含扩展名），fileExtension 记录扩展名
 					const fullName = this.files[index].name;
 					const lastDotIndex = fullName.lastIndexOf('.');
 					if (lastDotIndex > 0) {
-						this.fileName = fullName.substring(0, lastDotIndex);
+						this.fileName = fullName; // 完整文件名
 						this.fileExtension = fullName.substring(lastDotIndex); // 包含点号
 					} else {
 						this.fileName = fullName;
@@ -639,63 +674,107 @@
 					this.pagination.setItems(this.files);
 					this.displayFiles = this.pagination.getCurrentPageItems();
 				},
-				async clickedDelete() {
-					if (this.settings.deleteConfirm) {
+			// 通用方法：移动文件到目标文件夹
+			async moveFileToFolder(fileHandle, targetFolderHandle, newFileName) {
+				try {
+					// 彻底释放文件句柄：重置显示状态（移除媒体DOM元素）并撤销对象URL
+					this.displayerInitialize()
+					// 等待Vue DOM更新完成（移除媒体元素），避免removeChild报错
+					await this.$nextTick()
+					
+					// 移动文件
+					await fileHandle.move(targetFolderHandle, newFileName);
+					return { success: true, error: null };
+				} catch (e) {
+					console.error('移动文件异常', e);
+					return { success: false, error: e };
+				}
+			},
+			async clickedDelete() {
+				// 先设置操作标志，阻塞 changeFile 切换文件
+				this.isOperating = true;
+				
+				// 捕获当前文件信息，避免后续异步操作中 this.curIndex 变化
+				let targetFileHandle = this.files[this.curIndex].fileHandle
+				let deleteFileName = this.fileName
+				
+				if (this.settings.deleteConfirm) {
 						let foreverText = ""
 						if (!this.settings.useDeleteFolder) foreverText = "<strong>永久</strong>"
 						this.$Modal.confirm({
 							title: '删除确认',
-							content: `<p>确认要${foreverText}删除文件 [${this.fileName}] 吗</p>`,
+							content: `<p>确认要${foreverText}删除文件 [${deleteFileName}] 吗</p>`,
 							onOk: async () => {
-								await this.deleteFile()
+								// 用户确认后，才显示遮罩层并执行删除
+								this.loadingText = '删除中...';
+								document.getElementById('operationOverlay').style.display = 'flex';
+								await this.deleteFile(targetFileHandle, deleteFileName)
 							},
-							onCancel: () => {
-								return;
+						onCancel: () => {
+							this.isOperating = false;
+							return;
 							}
 						});
 					} else {
-						await this.deleteFile()
+						// 没有确认弹窗，直接显示遮罩层并执行删除
+						this.loadingText = '删除中...';
+						document.getElementById('operationOverlay').style.display = 'flex';
+						await this.deleteFile(targetFileHandle, deleteFileName)
 					}
 				},
-				async deleteFile() {
-					let targetFileHandle = await this.files[this.curIndex].fileHandle
-					let mainFolderHandle = this.mainFolder.handler
-					if (this.settings.useDeleteFolder) {
-						try {
-							// 获取"_删除"文件夹handle，若没有则会自动创建
-							let trashFolderHandle = await mainFolderHandle.getDirectoryHandle('_删除', {
-								create: true
-							});
-							var deleteFileName = this.fileName
+			async deleteFile(targetFileHandle, deleteFileName) {
+				try {
+						if (this.settings.useDeleteFolder) {
+							try {
+								// 获取"_删除"文件夹handle，若没有则会自动创建
+								let trashFolderHandle = await this.mainFolder.handler.getDirectoryHandle('_删除', {
+									create: true
+								});
 
-							await targetFileHandle.move(trashFolderHandle); // 将文件移动到 "_删除" 文件夹
+								let result = await this.moveFileToFolder(targetFileHandle, trashFolderHandle, deleteFileName);
+								
+								if (!result.success) {
+									console.error('移动到"_删除"文件夹失败:', result.error);
+									this.$Message.error('移动到"_删除"文件夹失败');
+									if (this.settings.errorInfo) this.$Message.error(result.error.toString());
+									return
+								}
+							} catch (e) {
+								console.error('获取"_删除"文件夹失败:', e);
+								this.$Message.error('获取"_删除"文件夹失败');
+								if (this.settings.errorInfo) this.$Message.error(e.toString());
+								return
+							}
+							// 先隐藏operationOverlay并重置isOperating，否则removeFileInFileList->changeFile会被isOperating阻止
+							document.getElementById('operationOverlay').style.display = 'none';
+							this.isOperating = false;
+							this.removeFileInFileList()
+							this.$Message.success(`已移动文件 [${deleteFileName}] 到"_删除"文件夹`);
+						} else {
+							try {
+								await targetFileHandle.remove(); // 调用 remove 方法删除文件
+								// 先隐藏operationOverlay并重置isOperating，否则removeFileInFileList->changeFile会被isOperating阻止
+								document.getElementById('operationOverlay').style.display = 'none';
+								this.isOperating = false;
+								this.removeFileInFileList() // 在文件列表中删除
 
-						} catch (e) {
-							console.error('移动到"_删除"文件夹失败:', e);
-							this.$Message.error('移动到"_删除"文件夹失败');
-							if (this.settings.errorInfo) this.$Message.error(e.toString());
-							return
+								this.$Message.success(`已永久删除文件 [${deleteFileName}]`);
+							} catch (e) {
+								// 如果删除过程中出现错误，打印错误信息
+								console.error('永久删除文件失败:', e);
+								this.$Message.error('永久删除文件失败');
+								if (this.settings.errorInfo) this.$Message.error(e.toString());
+							}
 						}
-						this.removeFileInFileList()
-						console.log(`文件 "${deleteFileName}" 已移动到 "_删除" 文件夹`);
-						this.$Message.success(`已移动文件 [${deleteFileName}] 到"_删除"文件夹`);
-					} else {
-						try {
-							var deleteFileName = this.fileName
-
-							targetFileHandle.remove(); // 调用 remove 方法删除文件
-							this.removeFileInFileList() // 在文件列表中删除
-
-							console.log('文件已永久删除');
-							this.$Message.success(`已永久删除文件 [${deleteFileName}]`);
-						} catch (e) {
-							// 如果删除过程中出现错误，打印错误信息
-							console.error('永久删除文件失败:', e);
-							this.$Message.error('永久删除文件失败');
-							if (this.settings.errorInfo) this.$Message.error(e.toString());
-						}
-					}
-				},
+				} catch (e) {
+					console.error('删除异常', e);
+					this.$Message.error('删除失败');
+					if (this.settings.errorInfo) this.$Message.error(e.toString());
+				} finally {
+					document.getElementById('operationOverlay').style.display = 'none';
+					this.isOperating = false;
+				}
+			},
 				deleteCategory(index) {
 					let cName = this.categories[index].name
 					this.categories.splice(index, 1) // 删除数组一项，后面元素自动往前挪
@@ -745,9 +824,6 @@
 					}
 					this.checkingShortcut = false
 
-					let premission = await verifyPermission(this.categoryFolderHandle)
-					if (!premission) return
-
 					this.categories.push({
 						name: this.categoryName,
 						shortcut: this.categoryShortcut,
@@ -755,29 +831,54 @@
 					})
 					this.showNewCategory = false
 				},
-				async move2Folder(category) {
-					// this.animation.right = false
-					let curFile = this.files[this.curIndex].fileHandle // 当前选择的文件
-					try {
-						let premission = await verifyPermission(this.categoryFolderHandle) // 先询问权限
-						if (!premission) return
-
-						await curFile.move(category.folderHandle, this.fileName);
+			async move2Folder(category) {
+				// 先设置操作标志，阻塞 changeFile 切换文件
+				this.isOperating = true;
+				this.loadingText = '分类中...';
+				document.getElementById('operationOverlay').style.display = 'flex';
+				
+				// 再捕获当前文件信息，避免后续异步操作中 this.curIndex 变化
+				const curIndex = this.curIndex;
+				const curFile = this.files[curIndex].fileHandle;
+				const curFileName = this.fileName; // 完整文件名（含扩展名）
+				
+				try {
+					// 先请求权限，move()不会自动触发权限请求
+					let premission = await verifyPermission(category.folderHandle)
+					if (!premission) {
+						document.getElementById('operationOverlay').style.display = 'none';
+						this.isOperating = false;
+						return;
+					}
+					
+					let result = await this.moveFileToFolder(curFile, category.folderHandle, curFileName)
+					
+					if (result.success) {
+						// 先隐藏operationOverlay并重置isOperating，否则removeFileInFileList->changeFile会被isOperating阻止
+						document.getElementById('operationOverlay').style.display = 'none';
+						this.isOperating = false;
 						this.removeFileInFileList()
-
 						this.$Message.success(`成功分类至 [${category.name}]`);
-					} catch (e) {
-						console.log(e)
+					} else {
+						console.error('分类失败', result.error)
 						this.$Message['error']({
 							background: true,
 							content: '分类失败'
 						});
-						if (this.settings.errorInfo) this.$Message.error(e.toString());
+						if (this.settings.errorInfo) this.$Message.error(result.error.toString());
 					}
-					// setTimeout(()=>{
-					// 	this.animation.right = true
-					// }, 500)
-				},
+				} catch (e) {
+					console.error('分类异常', e);
+					this.$Message['error']({
+						background: true,
+						content: '分类失败'
+					});
+					if (this.settings.errorInfo) this.$Message.error(e.toString());
+				} finally {
+					document.getElementById('operationOverlay').style.display = 'none';
+					this.isOperating = false;
+				}
+			},
 				handleFocus() { // 重命名输入框获取焦点
 					// console.log('focus')
 					this.isFocused = true;
@@ -910,6 +1011,23 @@
 						key: 'lastModified',
 						sortable: 'custom'
 					}]
+				},
+				displayFileName: {
+					get() {
+						// 返回不含扩展名的文件名用于输入框显示
+						if (this.fileExtension && this.fileName.endsWith(this.fileExtension)) {
+							return this.fileName.substring(0, this.fileName.length - this.fileExtension.length);
+						}
+						return this.fileName;
+					},
+					set(value) {
+						// 输入时自动补上扩展名
+						if (this.fileExtension && !value.endsWith(this.fileExtension)) {
+							this.fileName = value + this.fileExtension;
+						} else {
+							this.fileName = value;
+						}
+					}
 				}
 			},
 			watch: {
